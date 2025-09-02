@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.example
+
+# Documentation
+README.md
+groups.md
+groups.txt
+
+# Logs
+*.log
+server.log
+
+# SQLite (we're using PostgreSQL now)
+*.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

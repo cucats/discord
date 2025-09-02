@@ -1,0 +1,21 @@
+{{template "base" .}}
+
+{{define "title"}}Verification Failed{{ end }}
+
+{{define
+"styles"}}
+<style>
+  h1 {
+    color: #f85149;
+  }
+
+  p {
+    color: #c9d1d9;
+  }
+</style>
+{{ end }}
+
+{{define "content"}}
+<h1>Verification Failed</h1>
+<p>{{.Message}}</p>
+{{ end }}
