@@ -1,10 +1,9 @@
-package handlers
+package role
 
 import (
 	"html/template"
 	"net/http"
 
-	"cucats.org/discord/internal/cam"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -39,7 +38,7 @@ type SuccessData struct {
 	IsStudent       bool
 }
 
-func renderSuccess(w http.ResponseWriter, user *discordgo.User, msUserInfo *cam.UserInfo) {
+func renderSuccess(w http.ResponseWriter, user *discordgo.User, msUserInfo *UserInfo) {
 	data := SuccessData{
 		DiscordUsername: user.Username,
 		DiscordID:       user.ID,

@@ -1,15 +1,15 @@
-package discord
+package role
 
 import (
 	"fmt"
 	"log"
 
-	"cucats.org/discord/internal/config"
+	"cucats.org/discord/config"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/oauth2"
 )
 
-const authority = "https://discord.com/api/v10"
+const discordAuthority = "https://discord.com/api/v10"
 
 func BoolToString(b bool) string {
 	if b {
@@ -23,15 +23,19 @@ func IntToString(i int) string {
 	return fmt.Sprintf("%d", i)
 }
 
-var OAuth = oauth2.Config{
-	ClientID:     config.DiscordClientID,
-	ClientSecret: config.DiscordClientSecret,
-	Endpoint: oauth2.Endpoint{
-		AuthURL:  authority + "/oauth2/authorize",
-		TokenURL: authority + "/oauth2/token",
-	},
-	RedirectURL: config.DiscordRedirectURI,
-	Scopes:      []string{"identify", "role_connections.write"},
+var DiscordOAuth *oauth2.Config
+
+func InitDiscordOAuth() {
+	DiscordOAuth = &oauth2.Config{
+		ClientID:     config.DiscordClientID,
+		ClientSecret: config.DiscordClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  discordAuthority + "/oauth2/authorize",
+			TokenURL: discordAuthority + "/oauth2/token",
+		},
+		RedirectURL: config.Host + "/discord/callback",
+		Scopes:      []string{"identify", "role_connections.write"},
+	}
 }
 
 func RegisterMetadata() {

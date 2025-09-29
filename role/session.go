@@ -1,4 +1,4 @@
-package handlers
+package role
 
 import (
 	"net/http"
@@ -8,10 +8,12 @@ import (
 )
 
 type Session struct {
-	DiscordState string
-	DiscordToken *oauth2.Token
-	CamState     string
-	CreatedAt    time.Time
+	DiscordUserID string // The Discord user who initiated verification
+	GuildID       string // The guild where verification was initiated
+	DiscordState  string
+	DiscordToken  *oauth2.Token
+	CamState      string
+	CreatedAt     time.Time
 }
 
 func (h *Handlers) sessionCleanup() {

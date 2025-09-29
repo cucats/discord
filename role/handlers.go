@@ -1,4 +1,4 @@
-package handlers
+package role
 
 import (
 	"context"
@@ -8,23 +8,18 @@ import (
 	"net/http"
 	"sync"
 
-	"cucats.org/discord/internal/cam"
-	"cucats.org/discord/internal/config"
-	"cucats.org/discord/internal/database"
-	"cucats.org/discord/internal/discord"
+	"cucats.org/discord/config"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/oauth2"
 )
 
 type Handlers struct {
-	db         *database.DB
 	sessions   map[string]*Session
 	sessionsMu sync.RWMutex
 }
 
-func New(db *database.DB) *Handlers {
+func New() *Handlers {
 	h := &Handlers{
-		db:       db,
 		sessions: make(map[string]*Session),
 	}
 
@@ -44,12 +39,12 @@ func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, config.DiscordInviteURL, http.StatusFound)
 }
 
-// GET /linked-role
+// GET /role
 func (h *Handlers) LinkedRole(w http.ResponseWriter, r *http.Request) {
 	session := h.createSession(w)
 	session.DiscordState = generateState()
 
-	authURL := discord.OAuth.AuthCodeURL(session.DiscordState)
+	authURL := DiscordOAuth.AuthCodeURL(session.DiscordState)
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
 
@@ -74,7 +69,7 @@ func (h *Handlers) DiscordCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := discord.OAuth.Exchange(context.Background(), code)
+	token, err := DiscordOAuth.Exchange(context.Background(), code)
 	if err != nil {
 		log.Printf("Discord token exchange error: %v", err)
 		renderError(w, "Failed to exchange code", http.StatusInternalServerError)
@@ -84,7 +79,7 @@ func (h *Handlers) DiscordCallback(w http.ResponseWriter, r *http.Request) {
 	session.DiscordToken = token
 	session.CamState = generateState()
 
-	authURL := cam.OAuth.AuthCodeURL(session.CamState,
+	authURL := CamOAuth.AuthCodeURL(session.CamState,
 		oauth2.SetAuthURLParam("domain_hint", "cam.ac.uk"),
 	)
 
@@ -112,7 +107,7 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msToken, err := cam.OAuth.Exchange(context.Background(), code)
+	msToken, err := CamOAuth.Exchange(context.Background(), code)
 	if err != nil {
 		log.Printf("Microsoft token exchange error: %v", err)
 		renderError(w, "Failed to exchange Microsoft code", http.StatusInternalServerError)
@@ -128,38 +123,26 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msUser, err := cam.GetUserInfo(context.Background(), msToken.AccessToken)
+	msUser, err := GetUserInfo(context.Background(), msToken.AccessToken)
 	if err != nil {
 		log.Printf("Microsoft user fetch error: %v", err)
 		renderError(w, "Failed to get Microsoft user", http.StatusInternalServerError)
 		return
 	}
 
-	// Save tokens to database
-	userToken := &database.UserToken{
-		DiscordUserID:       discordUser.ID,
-		DiscordAccessToken:  session.DiscordToken.AccessToken,
-		DiscordRefreshToken: session.DiscordToken.RefreshToken,
-		EntraAccessToken:    msToken.AccessToken,
-		EntraRefreshToken:   msToken.RefreshToken,
-		EntraUPN:            msUser.UPN,
-	}
-
-	if err := h.db.SaveUserToken(userToken); err != nil {
-		log.Printf("Database save error: %v", err)
-		renderError(w, "Failed to save user data", http.StatusInternalServerError)
-		return
-	}
+	log.Printf("User: Discord=%s#%s (ID=%s) UPN=%s Student=%v Staff=%v Alumni=%v College=%v",
+		discordUser.Username, discordUser.Discriminator, discordUser.ID, msUser.UPN,
+		msUser.IsStudent, msUser.IsStaff, msUser.IsAlumni, msUser.College)
 
 	// Update Discord role connection
 	roleConnection := &discordgo.ApplicationRoleConnection{
 		PlatformName:     "Cambridge Verification",
 		PlatformUsername: msUser.UPN,
 		Metadata: map[string]string{
-			"is_student": discord.BoolToString(msUser.IsStudent),
-			"is_staff":   discord.BoolToString(msUser.IsStaff),
-			"is_alumni":  discord.BoolToString(msUser.IsAlumni),
-			"college":    discord.IntToString(int(msUser.College)),
+			"is_student": BoolToString(msUser.IsStudent),
+			"is_staff":   BoolToString(msUser.IsStaff),
+			"is_alumni":  BoolToString(msUser.IsAlumni),
+			"college":    IntToString(int(msUser.College)),
 		},
 	}
 

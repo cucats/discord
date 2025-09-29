@@ -1,10 +1,10 @@
-package cam
+package role
 
 import (
 	"context"
 	"time"
 
-	"cucats.org/discord/internal/config"
+	"cucats.org/discord/config"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	msgraphsdkgo "github.com/microsoftgraph/msgraph-sdk-go"
@@ -17,15 +17,19 @@ const (
 	authority = "https://login.microsoftonline.com/" + tenantID
 )
 
-var OAuth *oauth2.Config = &oauth2.Config{
-	ClientID:     config.CamClientID,
-	ClientSecret: config.CamClientSecret,
-	Endpoint: oauth2.Endpoint{
-		AuthURL:  authority + "/oauth2/v2.0/authorize",
-		TokenURL: authority + "/oauth2/v2.0/token",
-	},
-	RedirectURL: config.CamRedirectURI,
-	Scopes:      []string{"User.Read", "offline_access"},
+var CamOAuth *oauth2.Config
+
+func InitCamOAuth() {
+	CamOAuth = &oauth2.Config{
+		ClientID:     config.CamClientID,
+		ClientSecret: config.CamClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  authority + "/oauth2/v2.0/authorize",
+			TokenURL: authority + "/oauth2/v2.0/token",
+		},
+		RedirectURL: config.Host + "/cam/callback",
+		Scopes:      []string{"User.Read"},
+	}
 }
 
 type TokenCredential struct {
@@ -84,13 +88,6 @@ const (
 	TrinityHall
 	Wolfson
 )
-
-func getValue(ptr *string) string {
-	if ptr == nil {
-		return "<nil>"
-	}
-	return *ptr
-}
 
 const (
 	UocUsersStaff   string = "1f440b90-597d-45b4-9a0d-11707f784de7"

@@ -7,21 +7,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const (
-	DiscordCallbackPath = "/discord/callback"
-	CamCallbackPath     = "/cam/callback"
-)
-
 var (
 	Host                string
 	DiscordInviteURL    string
 	DiscordBotToken     string
 	DiscordClientID     string
 	DiscordClientSecret string
-	DiscordRedirectURI  string
 	CamClientID         string
 	CamClientSecret     string
-	CamRedirectURI      string
 	DatabaseURL         string
 )
 
@@ -33,7 +26,7 @@ func mustGetEnv(key string) string {
 	return value
 }
 
-func init() {
+func Init() {
 	godotenv.Load()
 
 	Host = mustGetEnv("HOST")
@@ -41,9 +34,7 @@ func init() {
 	DiscordBotToken = mustGetEnv("DISCORD_BOT_TOKEN")
 	DiscordClientID = mustGetEnv("DISCORD_CLIENT_ID")
 	DiscordClientSecret = mustGetEnv("DISCORD_CLIENT_SECRET")
-	DiscordRedirectURI = Host + DiscordCallbackPath
 	CamClientID = mustGetEnv("CAM_CLIENT_ID")
 	CamClientSecret = mustGetEnv("CAM_CLIENT_SECRET")
-	CamRedirectURI = Host + CamCallbackPath
 	DatabaseURL = mustGetEnv("DATABASE_URL")
 }
