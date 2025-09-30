@@ -42,7 +42,7 @@ func startHTTPServer() {
 	h := role.New()
 
 	http.HandleFunc("/", h.Index)
-	http.HandleFunc("/linked-role", h.LinkedRole)
+	http.HandleFunc("/role", h.LinkedRole)
 	http.HandleFunc("/discord/callback", h.DiscordCallback)
 	http.HandleFunc("/cam/callback", h.CamCallback)
 

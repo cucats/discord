@@ -2,11 +2,10 @@
 
 # Discord Linked Role for the University of Cambridge
 
-[![CI](https://github.com/cucats/discord-linked-role/actions/workflows/ci.yml/badge.svg)](https://github.com/cucats/discord-linked-role/actions/workflows/ci.yml)
+[![CI](https://github.com/cucats/discord/actions/workflows/ci.yml/badge.svg)](https://github.com/cucats/discord/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Go](https://img.shields.io/badge/go-1.24.6%2B-blue)](https://golang.org/dl/)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://hub.docker.com)
-[![PostgreSQL](https://img.shields.io/badge/postgresql-15%2B-blue)](https://www.postgresql.org/)
 
 Verifies University of Cambridge students via Microsoft Entra ID for Discord linked roles.
 
@@ -15,7 +14,6 @@ Verifies University of Cambridge students via Microsoft Entra ID for Discord lin
 ## Prerequisites
 
 - Go 1.24.6 or later
-- PostgreSQL 15 or later
 - Discord Application (Client ID, Client Secret, Bot Token) from https://discord.com/developers/applications
 - Microsoft Entra ID Application (Client ID, Client Secret) from https://toolkit.uis.cam.ac.uk/endpoints
 
@@ -41,9 +39,6 @@ DISCORD_CLIENT_SECRET=your_discord_client_secret
 # Microsoft Entra ID
 UCAM_CLIENT_ID=your_microsoft_client_id
 UCAM_CLIENT_SECRET=your_microsoft_client_secret
-
-# Database
-DATABASE_URL=postgres://postgres:password@localhost:5432/discord
 ```
 
 Install dependencies:
@@ -75,6 +70,6 @@ go build -o discord
 ## Endpoints
 
 - `/` - Redirects to Discord invite
-- `/linked-role` - Start verification process
+- `/role` - Start verification process
 - `/discord/callback` - Discord OAuth callback
 - `/ucam/callback` - Cambridge OAuth callback
