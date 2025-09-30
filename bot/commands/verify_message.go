@@ -26,7 +26,7 @@ func (c *verifyCommand) handle(s *discordgo.Session, i *discordgo.InteractionCre
 			Embeds: []*discordgo.MessageEmbed{
 				{
 					Title:       "Verify to access the server",
-					Description: "Click the button below to verify your Cambridge account access the server.",
+					Description: "Click the button below to verify your Cambridge account and access the server.",
 					Color:       0x9B59B6,
 				},
 			},
