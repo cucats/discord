@@ -40,7 +40,7 @@ func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /role
-func (h *Handlers) LinkedRole(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Role(w http.ResponseWriter, r *http.Request) {
 	session := h.createSession(w)
 	session.DiscordState = generateState()
 
