@@ -2,8 +2,8 @@ package bot
 
 import (
 	"log"
-	"strings"
 
+	"cucats.org/discord/bot/commands"
 	"cucats.org/discord/config"
 	"github.com/bwmarrin/discordgo"
 )
@@ -22,10 +22,10 @@ func New() (*Bot, error) {
 		session: session,
 	}
 
-	session.AddHandler(bot.messageCreate)
 	session.AddHandler(bot.ready)
+	session.AddHandler(bot.interactionCreate)
 
-	session.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsDirectMessages
+	session.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMembers
 
 	return bot, nil
 }
@@ -45,15 +45,22 @@ func (b *Bot) Stop() error {
 
 func (b *Bot) ready(s *discordgo.Session, event *discordgo.Ready) {
 	log.Printf("Bot logged in as: %v#%v", s.State.User.Username, s.State.User.Discriminator)
+
+	log.Println("Registering slash commands...")
+	commandDefs := commands.GetDefinitions()
+
+	for _, cmd := range commandDefs {
+		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", cmd)
+		if err != nil {
+			log.Printf("Error registering command %s: %v", cmd.Name, err)
+		} else {
+			log.Printf("Registered command: %s", cmd.Name)
+		}
+	}
 }
 
-func (b *Bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
-	// Simple ping command
-	if strings.HasPrefix(m.Content, "!ping") {
-		s.ChannelMessageSend(m.ChannelID, "Pong")
+func (b *Bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type == discordgo.InteractionApplicationCommand {
+		commands.Handle(s, i)
 	}
 }

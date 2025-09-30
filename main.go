@@ -13,20 +13,13 @@ import (
 )
 
 func main() {
-	// Initialize configuration
 	config.Init()
-
-	// Initialize OAuth configs
 	role.InitDiscordOAuth()
 	role.InitCamOAuth()
 
-	// Register Discord metadata for linked roles
-	role.RegisterMetadata()
-
-	// Start HTTP server for linked roles in a goroutine
+	go role.RegisterMetadata()
 	go startHTTPServer()
 
-	// Start Discord bot
 	discordBot, err := bot.New()
 	if err != nil {
 		log.Fatal("Error creating Discord bot:", err)
@@ -38,7 +31,6 @@ func main() {
 	}
 	defer discordBot.Stop()
 
-	// Wait for interrupt signal to gracefully shutdown
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
