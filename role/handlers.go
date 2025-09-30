@@ -135,8 +135,8 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("user verified",
-		"discord_id", discordUser.ID,
-		"discord_username", discordUser.Username,
+		"user_id", discordUser.ID,
+		"username", discordUser.Username,
 		"upn", msUser.UPN,
 		"student", msUser.IsStudent,
 		"staff", msUser.IsStaff,
@@ -145,16 +145,19 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bot.Session.GuildMemberRoleAdd(config.GuildID, discordUser.ID, verifiedRoleID)
 	if err != nil {
-		slog.Error("failed to add verified role", "discord_id", discordUser.ID, "error", err)
-		renderError(w, "Failed to add verified role. Make sure you've joined the server first.", http.StatusInternalServerError)
+		slog.Error("failed to add role", "user_id", discordUser.ID, "role_id", verifiedRoleID, "error", err)
+		renderError(w, "Failed to add verified role.", http.StatusInternalServerError)
 		return
 	}
+	slog.Info("added role", "user_id", discordUser.ID, "role_id", verifiedRoleID)
 
 	if msUser.College != Unknown {
 		if collegeRoleID, ok := CollegeRoles[msUser.College]; ok {
 			err = h.bot.Session.GuildMemberRoleAdd(config.GuildID, discordUser.ID, collegeRoleID)
 			if err != nil {
-				slog.Warn("failed to add college role", "discord_id", discordUser.ID, "college", msUser.College, "error", err)
+				slog.Warn("failed to role", "user_id", discordUser.ID, "role_id", collegeRoleID, "college", msUser.College, "error", err)
+			} else {
+				slog.Info("added role", "user_id", discordUser.ID, "role_id", collegeRoleID, "college", msUser.College)
 			}
 		}
 	}
