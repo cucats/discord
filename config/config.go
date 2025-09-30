@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,13 +15,15 @@ var (
 	DiscordClientSecret string
 	CamClientID         string
 	CamClientSecret     string
-	DatabaseURL         string
 )
+
+const GuildID = "785990750042980352"
 
 func mustGetEnv(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		log.Fatalf("Required environment variable %s not set", key)
+		slog.Error("Required environment variable not set", "key", key)
+		os.Exit(1)
 	}
 	return value
 }
@@ -36,5 +38,4 @@ func Init() {
 	DiscordClientSecret = mustGetEnv("DISCORD_CLIENT_SECRET")
 	CamClientID = mustGetEnv("CAM_CLIENT_ID")
 	CamClientSecret = mustGetEnv("CAM_CLIENT_SECRET")
-	DatabaseURL = mustGetEnv("DATABASE_URL")
 }

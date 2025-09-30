@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"log"
+	"log/slog"
 
 	"cucats.org/discord/bot/commands"
 	"cucats.org/discord/config"
@@ -9,7 +9,7 @@ import (
 )
 
 type Bot struct {
-	session *discordgo.Session
+	Session *discordgo.Session
 }
 
 func New() (*Bot, error) {
@@ -19,7 +19,7 @@ func New() (*Bot, error) {
 	}
 
 	bot := &Bot{
-		session: session,
+		Session: session,
 	}
 
 	session.AddHandler(bot.ready)
@@ -31,30 +31,28 @@ func New() (*Bot, error) {
 }
 
 func (b *Bot) Start() error {
-	err := b.session.Open()
+	err := b.Session.Open()
 	if err != nil {
 		return err
 	}
-	log.Println("Discord bot is now running")
+	slog.Info("bot started")
 	return nil
 }
 
 func (b *Bot) Stop() error {
-	return b.session.Close()
+	return b.Session.Close()
 }
 
 func (b *Bot) ready(s *discordgo.Session, event *discordgo.Ready) {
-	log.Printf("Bot logged in as: %v#%v", s.State.User.Username, s.State.User.Discriminator)
+	slog.Info("bot ready", "username", s.State.User.Username)
 
-	log.Println("Registering slash commands...")
 	commandDefs := commands.GetDefinitions()
-
 	for _, cmd := range commandDefs {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", cmd)
 		if err != nil {
-			log.Printf("Error registering command %s: %v", cmd.Name, err)
+			slog.Error("failed to register command", "command", cmd.Name, "error", err)
 		} else {
-			log.Printf("Registered command: %s", cmd.Name)
+			slog.Info("registered command", "command", cmd.Name)
 		}
 	}
 }

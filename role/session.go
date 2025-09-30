@@ -8,8 +8,8 @@ import (
 )
 
 type Session struct {
-	DiscordUserID string // The Discord user who initiated verification
-	GuildID       string // The guild where verification was initiated
+	DiscordUserID string
+	GuildID       string
 	DiscordState  string
 	DiscordToken  *oauth2.Token
 	CamState      string

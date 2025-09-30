@@ -4,23 +4,28 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 
+	"cucats.org/discord/bot"
 	"cucats.org/discord/config"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/oauth2"
 )
 
+const verifiedRoleID = "1422372716840882348"
+
 type Handlers struct {
 	sessions   map[string]*Session
 	sessionsMu sync.RWMutex
+	bot        *bot.Bot
 }
 
-func New() *Handlers {
+func New(discordBot *bot.Bot) *Handlers {
 	h := &Handlers{
 		sessions: make(map[string]*Session),
+		bot:      discordBot,
 	}
 
 	go h.sessionCleanup()
@@ -71,7 +76,7 @@ func (h *Handlers) DiscordCallback(w http.ResponseWriter, r *http.Request) {
 
 	token, err := DiscordOAuth.Exchange(context.Background(), code)
 	if err != nil {
-		log.Printf("Discord token exchange error: %v", err)
+		slog.Error("discord token exchange failed", "error", err)
 		renderError(w, "Failed to exchange code", http.StatusInternalServerError)
 		return
 	}
@@ -109,49 +114,49 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 
 	msToken, err := CamOAuth.Exchange(context.Background(), code)
 	if err != nil {
-		log.Printf("Microsoft token exchange error: %v", err)
+		slog.Error("cam token exchange failed", "error", err)
 		renderError(w, "Failed to exchange Microsoft code", http.StatusInternalServerError)
 		return
 	}
 
 	discordSession, _ := discordgo.New("Bearer " + session.DiscordToken.AccessToken)
 	discordUser, err := discordSession.User("@me")
-
 	if err != nil {
-		log.Printf("Discord user fetch error: %v", err)
+		slog.Error("discord user fetch failed", "error", err)
 		renderError(w, "Failed to get Discord user", http.StatusInternalServerError)
 		return
 	}
 
 	msUser, err := GetUserInfo(context.Background(), msToken.AccessToken)
 	if err != nil {
-		log.Printf("Microsoft user fetch error: %v", err)
+		slog.Error("cam user fetch failed", "error", err)
 		renderError(w, "Failed to get Microsoft user", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("User: Discord=%s#%s (ID=%s) UPN=%s Student=%v Staff=%v Alumni=%v College=%v",
-		discordUser.Username, discordUser.Discriminator, discordUser.ID, msUser.UPN,
-		msUser.IsStudent, msUser.IsStaff, msUser.IsAlumni, msUser.College)
+	slog.Info("user verified",
+		"discord_id", discordUser.ID,
+		"discord_username", discordUser.Username,
+		"upn", msUser.UPN,
+		"student", msUser.IsStudent,
+		"staff", msUser.IsStaff,
+		"alumni", msUser.IsAlumni,
+		"college", msUser.College)
 
-	// Update Discord role connection
-	roleConnection := &discordgo.ApplicationRoleConnection{
-		PlatformName:     "Cambridge Verification",
-		PlatformUsername: msUser.UPN,
-		Metadata: map[string]string{
-			"is_student": BoolToString(msUser.IsStudent),
-			"is_staff":   BoolToString(msUser.IsStaff),
-			"is_alumni":  BoolToString(msUser.IsAlumni),
-			"college":    IntToString(int(msUser.College)),
-		},
+	err = h.bot.Session.GuildMemberRoleAdd(config.GuildID, discordUser.ID, verifiedRoleID)
+	if err != nil {
+		slog.Error("failed to add verified role", "discord_id", discordUser.ID, "error", err)
+		renderError(w, "Failed to add verified role. Make sure you've joined the server first.", http.StatusInternalServerError)
+		return
 	}
 
-	_, err = discordSession.UserApplicationRoleConnectionUpdate(config.DiscordClientID, roleConnection)
-
-	if err != nil {
-		log.Printf("Discord role update error: %v", err)
-		renderError(w, "Failed to update Discord role", http.StatusInternalServerError)
-		return
+	if msUser.College != Unknown {
+		if collegeRoleID, ok := CollegeRoles[msUser.College]; ok {
+			err = h.bot.Session.GuildMemberRoleAdd(config.GuildID, discordUser.ID, collegeRoleID)
+			if err != nil {
+				slog.Warn("failed to add college role", "discord_id", discordUser.ID, "college", msUser.College, "error", err)
+			}
+		}
 	}
 
 	renderSuccess(w, discordUser, msUser)
