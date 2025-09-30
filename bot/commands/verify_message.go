@@ -25,8 +25,8 @@ func (c *verifyCommand) handle(s *discordgo.Session, i *discordgo.InteractionCre
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
 				{
-					Title:       "Verify your Cambridge identity",
-					Description: "Click the button below to verify your Cambridge account and get access to college roles.",
+					Title:       "Verify to access the server",
+					Description: "Click the button below to verify your Cambridge account access the server.",
 					Color:       0x9B59B6,
 				},
 			},
@@ -34,7 +34,7 @@ func (c *verifyCommand) handle(s *discordgo.Session, i *discordgo.InteractionCre
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
 						discordgo.Button{
-							Label: "Verify with Cambridge",
+							Label: "Verify",
 							Style: discordgo.LinkButton,
 							URL:   config.Host + "/role",
 						},
