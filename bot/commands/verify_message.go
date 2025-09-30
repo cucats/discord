@@ -23,7 +23,13 @@ func (c *verifyCommand) handle(s *discordgo.Session, i *discordgo.InteractionCre
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Click the button below to verify your Cambridge status and get access to the server.",
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "Verify your Cambridge identity",
+					Description: "Click the button below to verify your Cambridge account and get access to college roles.",
+					Color:       0x9B59B6,
+				},
+			},
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
