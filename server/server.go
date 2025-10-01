@@ -24,7 +24,15 @@ func Start(discordBot *bot.Bot) error {
 
 func handle(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
 	mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("request", "method", r.Method, "path", r.URL.Path, "ip", r.RemoteAddr)
+		slog.Info("request", "method", r.Method, "path", r.URL.Path, "ip", getClientIP(r))
 		handler(w, r)
 	})
+}
+
+func getClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		return xff
+	}
+
+	return r.RemoteAddr
 }
