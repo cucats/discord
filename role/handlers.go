@@ -164,3 +164,8 @@ func (h *Handlers) CamCallback(w http.ResponseWriter, r *http.Request) {
 
 	renderSuccess(w, discordUser, msUser)
 }
+
+func (h *Handlers) RobotsTxt(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("User-agent: *\nDisallow: /\n"))
+}
