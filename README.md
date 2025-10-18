@@ -60,13 +60,6 @@ go build -o discord
 ./discord
 ```
 
-## Metadata
-
-- `is_student`: Current student (boolean)
-- `is_staff`: Staff member (boolean)
-- `is_alumni`: Alumni (boolean)
-- `college`: College membership (integer, 0 = None, or integer from 1 to 31 for colleges ordered alphabetically)
-
 ## Endpoints
 
 - `/` - Redirects to Discord invite
