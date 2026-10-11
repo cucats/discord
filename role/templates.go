@@ -7,11 +7,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var templates *template.Template
+var errorTemplate *template.Template
+var successTemplate *template.Template
 
 func init() {
 	var err error
-	templates, err = template.ParseGlob("templates/*.gohtml")
+	errorTemplate, err = template.ParseFiles("templates/base.gohtml", "templates/error.gohtml")
+	if err != nil {
+		panic(err)
+	}
+	successTemplate, err = template.ParseFiles("templates/base.gohtml", "templates/success.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +33,8 @@ func renderError(w http.ResponseWriter, message string, statusCode int) {
 		StatusCode: statusCode,
 	}
 
-	templates.ExecuteTemplate(w, "error.gohtml", data)
+	w.WriteHeader(statusCode)
+	errorTemplate.ExecuteTemplate(w, "error.gohtml", data)
 }
 
 type SuccessData struct {
@@ -46,5 +52,5 @@ func renderSuccess(w http.ResponseWriter, user *discordgo.User, msUserInfo *User
 		IsStudent:       msUserInfo.IsStudent,
 	}
 
-	templates.ExecuteTemplate(w, "success.gohtml", data)
+	successTemplate.ExecuteTemplate(w, "success.gohtml", data)
 }
