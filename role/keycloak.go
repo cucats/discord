@@ -52,7 +52,13 @@ type keycloakClaims struct {
 	Name              string `json:"name"`
 }
 
-func GetKeycloakUserInfo(ctx context.Context, token *oauth2.Token, expectedNonce string) (*UserInfo, error) {
+type KeycloakUser struct {
+	ID          string
+	Account     string
+	DisplayName string
+}
+
+func GetKeycloakUserInfo(ctx context.Context, token *oauth2.Token, expectedNonce string) (*KeycloakUser, error) {
 	rawIDToken, ok := token.Extra("id_token").(string)
 	if !ok || rawIDToken == "" {
 		return nil, errors.New("Keycloak did not return an ID token")
@@ -104,5 +110,5 @@ func GetKeycloakUserInfo(ctx context.Context, token *oauth2.Token, expectedNonce
 		displayName = account
 	}
 
-	return &UserInfo{Account: account, DisplayName: displayName}, nil
+	return &KeycloakUser{ID: idToken.Subject, Account: account, DisplayName: displayName}, nil
 }

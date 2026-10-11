@@ -89,7 +89,7 @@ func TestGetKeycloakUserInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if user.Account != "user@cam.ac.uk" || user.DisplayName != "Cambridge User" {
+	if user.ID != "cambridge-user" || user.Account != "user@cam.ac.uk" || user.DisplayName != "Cambridge User" {
 		t.Fatalf("unexpected user information: %+v", user)
 	}
 

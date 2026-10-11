@@ -11,6 +11,22 @@ type UserInfo struct {
 
 type College int
 
+var collegeNames = [...]string{
+	"", "Christ's", "Churchill", "Clare", "Clare Hall", "Corpus Christi",
+	"Darwin", "Downing", "Emmanuel", "Fitzwilliam", "Girton", "Gonville & Caius",
+	"Homerton", "Hughes Hall", "Jesus", "King's", "Lucy Cavendish", "Magdalene",
+	"Murray Edwards", "Newnham", "Pembroke", "Peterhouse", "Queens'", "Robinson",
+	"Selwyn", "Sidney Sussex", "St Catharine's", "St Edmund's", "St John's",
+	"Trinity", "Trinity Hall", "Wolfson",
+}
+
+func (c College) Name() string {
+	if c < 0 || int(c) >= len(collegeNames) {
+		return ""
+	}
+	return collegeNames[c]
+}
+
 const (
 	Unknown College = iota
 	Christs

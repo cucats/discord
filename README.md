@@ -40,6 +40,8 @@ DISCORD_CLIENT_SECRET=your_discord_client_secret
 KEYCLOAK_ISSUER=https://kc.cucats.org/realms/master
 KEYCLOAK_CLIENT_ID=your_keycloak_client_id
 KEYCLOAK_CLIENT_SECRET=your_keycloak_client_secret
+KEYCLOAK_WRITER_CLIENT_ID=cucats-discord-writer
+KEYCLOAK_WRITER_CLIENT_SECRET=your_keycloak_writer_client_secret
 KEYCLOAK_ENTRA_ALIAS=microsoft
 ```
 
@@ -80,6 +82,15 @@ assign the verified and college roles. Keycloak's public login page currently
 identifies the Microsoft provider as `microsoft`; set `KEYCLOAK_ENTRA_ALIAS` if
 that alias changes. The app does not grant a verified role when it cannot fetch
 the brokered token or Graph memberships.
+
+After assigning roles, the bot stores `discord_id`, `discord_username`, and
+`college` on the verified Keycloak user. It removes a previously stored college
+when Cambridge no longer reports one. Create a separate confidential client with
+service accounts enabled for `KEYCLOAK_WRITER_CLIENT_ID`, and grant its service
+account permission to read and update realm users. Configure these three user
+profile attributes with admin edit permission, so users cannot set their own
+college or Discord identity. The bot reads the attributes back and reports an
+error if Keycloak does not retain them.
 
 The production Keycloak realm uses broker API V2. Enable it with
 `KC_FEATURES=identity-brokering-api:v2`, set **Store token in session** on the

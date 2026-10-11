@@ -207,6 +207,11 @@ func (h *Handlers) KeycloakCallback(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	if err := StoreVerificationInKeycloak(r.Context(), keycloakUser.ID, discordUser.ID, discordUser.Username, cambridgeUser.College); err != nil {
+		slog.Error("failed to store verification in Keycloak", "error", err)
+		renderError(w, "Roles assigned, but could not save verification to Keycloak", http.StatusBadGateway)
+		return
+	}
 
 	h.deleteSession(w, r)
 	renderSuccess(w, discordUser, cambridgeUser)
