@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"time"
 
 	"cucats.org/discord/config"
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -17,7 +20,16 @@ var (
 )
 
 func InitKeycloakOAuth(ctx context.Context) error {
-	provider, err := oidc.NewProvider(ctx, config.KeycloakIssuer)
+	discoveryCtx := oidc.ClientContext(ctx, &http.Client{Timeout: 10 * time.Second})
+	var provider *oidc.Provider
+	var err error
+	for attempt := 1; attempt <= 3; attempt++ {
+		provider, err = oidc.NewProvider(discoveryCtx, config.KeycloakIssuer)
+		if err == nil || ctx.Err() != nil {
+			break
+		}
+		slog.Warn("Keycloak discovery attempt failed", "attempt", attempt, "error", err)
+	}
 	if err != nil {
 		return fmt.Errorf("discover Keycloak issuer: %w", err)
 	}
