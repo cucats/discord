@@ -8,13 +8,15 @@ import (
 )
 
 var (
-	Host                string
-	DiscordInviteURL    string
-	DiscordBotToken     string
-	DiscordClientID     string
-	DiscordClientSecret string
-	CamClientID         string
-	CamClientSecret     string
+	Host                 string
+	DiscordInviteURL     string
+	DiscordBotToken      string
+	DiscordClientID      string
+	DiscordClientSecret  string
+	KeycloakIssuer       string
+	KeycloakClientID     string
+	KeycloakClientSecret string
+	KeycloakEntraAlias   string
 )
 
 const GuildID = "785990750042980352"
@@ -36,6 +38,11 @@ func Init() {
 	DiscordBotToken = mustGetEnv("DISCORD_BOT_TOKEN")
 	DiscordClientID = mustGetEnv("DISCORD_CLIENT_ID")
 	DiscordClientSecret = mustGetEnv("DISCORD_CLIENT_SECRET")
-	CamClientID = mustGetEnv("CAM_CLIENT_ID")
-	CamClientSecret = mustGetEnv("CAM_CLIENT_SECRET")
+	KeycloakIssuer = mustGetEnv("KEYCLOAK_ISSUER")
+	KeycloakClientID = mustGetEnv("KEYCLOAK_CLIENT_ID")
+	KeycloakClientSecret = mustGetEnv("KEYCLOAK_CLIENT_SECRET")
+	KeycloakEntraAlias = os.Getenv("KEYCLOAK_ENTRA_ALIAS")
+	if KeycloakEntraAlias == "" {
+		KeycloakEntraAlias = "microsoft"
+	}
 }

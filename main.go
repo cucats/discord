@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -17,7 +18,10 @@ func main() {
 
 	config.Init()
 	role.InitDiscordOAuth()
-	role.InitCamOAuth()
+	if err := role.InitKeycloakOAuth(context.Background()); err != nil {
+		slog.Error("failed to initialize Keycloak", "error", err)
+		os.Exit(1)
+	}
 
 	discordBot, err := bot.New()
 	if err != nil {

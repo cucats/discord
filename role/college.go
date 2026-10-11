@@ -1,50 +1,7 @@
 package role
 
-import (
-	"context"
-	"time"
-
-	"cucats.org/discord/config"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	msgraphsdkgo "github.com/microsoftgraph/msgraph-sdk-go"
-	"github.com/microsoftgraph/msgraph-sdk-go/models"
-	"golang.org/x/oauth2"
-)
-
-const (
-	tenantID  = "49a50445-bdfa-4b79-ade3-547b4f3986e9"
-	authority = "https://login.microsoftonline.com/" + tenantID
-)
-
-var CamOAuth *oauth2.Config
-
-func InitCamOAuth() {
-	CamOAuth = &oauth2.Config{
-		ClientID:     config.CamClientID,
-		ClientSecret: config.CamClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  authority + "/oauth2/v2.0/authorize",
-			TokenURL: authority + "/oauth2/v2.0/token",
-		},
-		RedirectURL: config.Host + "/cam/callback",
-		Scopes:      []string{"User.Read"},
-	}
-}
-
-type TokenCredential struct {
-	accessToken string
-}
-
-func (tc *TokenCredential) GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	return azcore.AccessToken{
-		Token:     tc.accessToken,
-		ExpiresOn: time.Now().Add(time.Hour),
-	}, nil
-}
-
 type UserInfo struct {
-	UPN         string
+	Account     string
 	DisplayName string
 	IsStudent   bool
 	IsAlumni    bool
@@ -164,45 +121,19 @@ const (
 	guidAlumni  = "bc7a045e-6775-423a-abc6-deac53b50712"
 )
 
-func GetUserInfo(ctx context.Context, accessToken string) (*UserInfo, error) {
-	client, err := msgraphsdkgo.NewGraphServiceClientWithCredentials(&TokenCredential{accessToken: accessToken}, []string{})
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := client.Me().Get(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	userInfo := &UserInfo{
-		UPN:         *user.GetUserPrincipalName(),
-		DisplayName: *user.GetDisplayName(),
-	}
-
-	groups, err := client.Me().MemberOf().Get(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, group := range groups.GetValue() {
-		if grp, ok := group.(*models.Group); ok {
-			if guid := grp.GetId(); guid != nil {
-				switch *guid {
-				case guidStudent:
-					userInfo.IsStudent = true
-				case guidStaff:
-					userInfo.IsStaff = true
-				case guidAlumni:
-					userInfo.IsAlumni = true
-				default:
-					if college, ok := collegeGroups[*guid]; ok {
-						userInfo.College = college
-					}
-				}
+func addCambridgeGroups(userInfo *UserInfo, groups []string) {
+	for _, group := range groups {
+		switch group {
+		case guidStudent:
+			userInfo.IsStudent = true
+		case guidStaff:
+			userInfo.IsStaff = true
+		case guidAlumni:
+			userInfo.IsAlumni = true
+		default:
+			if college, ok := collegeGroups[group]; ok {
+				userInfo.College = college
 			}
 		}
 	}
-
-	return userInfo, nil
 }

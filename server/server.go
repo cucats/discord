@@ -15,7 +15,7 @@ func Start(discordBot *bot.Bot) error {
 	handle(mux, "/", h.Index)
 	handle(mux, "/role", h.Role)
 	handle(mux, "/discord/callback", h.DiscordCallback)
-	handle(mux, "/cam/callback", h.CamCallback)
+	handle(mux, "/keycloak/callback", h.KeycloakCallback)
 	handle(mux, "/robots.txt", h.RobotsTxt)
 
 	port := "8080"

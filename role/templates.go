@@ -34,7 +34,7 @@ func renderError(w http.ResponseWriter, message string, statusCode int) {
 type SuccessData struct {
 	DiscordUsername string
 	DiscordID       string
-	UPN             string
+	Account         string
 	IsStudent       bool
 }
 
@@ -42,7 +42,7 @@ func renderSuccess(w http.ResponseWriter, user *discordgo.User, msUserInfo *User
 	data := SuccessData{
 		DiscordUsername: user.Username,
 		DiscordID:       user.ID,
-		UPN:             msUserInfo.UPN,
+		Account:         msUserInfo.Account,
 		IsStudent:       msUserInfo.IsStudent,
 	}
 

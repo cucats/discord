@@ -8,12 +8,15 @@ import (
 )
 
 type Session struct {
-	DiscordUserID string
-	GuildID       string
-	DiscordState  string
-	DiscordToken  *oauth2.Token
-	CamState      string
-	CreatedAt     time.Time
+	DiscordUserID    string
+	GuildID          string
+	DiscordState     string
+	DiscordToken     *oauth2.Token
+	KeycloakState    string
+	KeycloakNonce    string
+	KeycloakVerifier string
+	EntraRetry       bool
+	CreatedAt        time.Time
 }
 
 func (h *Handlers) sessionCleanup() {
@@ -75,4 +78,20 @@ func (h *Handlers) getSession(r *http.Request) *Session {
 	}
 
 	return session
+}
+
+func (h *Handlers) deleteSession(w http.ResponseWriter, r *http.Request) {
+	if cookie, err := r.Cookie("session"); err == nil {
+		h.sessionsMu.Lock()
+		delete(h.sessions, cookie.Value)
+		h.sessionsMu.Unlock()
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
 }
